@@ -13,12 +13,12 @@ import RealmSwift
 class TaskListViewController: UITableViewController {
 
     var taskLists: Results<TaskList>!
-    private var currentNumberOfTasks = 0
+   
     
     override func viewDidLoad() {
         super.viewDidLoad()
         taskLists = StorageManager.shared.realm.objects(TaskList.self)
-        
+       
         let addButton = UIBarButtonItem(
             barButtonSystemItem: .add,
             target: self,
@@ -69,15 +69,19 @@ class TaskListViewController: UITableViewController {
         
         let doneAction = UIContextualAction(style: .normal, title: "Done") { _, _, isDone in
             StorageManager.shared.done(taskList)
+            tableView.cellForRow(at: indexPath)?.accessoryType = UITableViewCell.AccessoryType.checkmark
             tableView.reloadRows(at: [indexPath], with: .automatic)
             isDone(true)
         }
         
+            
         editAction.backgroundColor = .orange
         doneAction.backgroundColor = #colorLiteral(red: 0.3411764801, green: 0.6235294342, blue: 0.1686274558, alpha: 1)
+       
         
         return UISwipeActionsConfiguration(actions: [doneAction, editAction, deleteAction])
     }
+
     
     // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -88,6 +92,13 @@ class TaskListViewController: UITableViewController {
     }
 
     @IBAction func sortingList(_ sender: UISegmentedControl) {
+        switch sender.selectedSegmentIndex {
+        case 0:
+            taskLists = taskLists.sorted(byKeyPath: "date", ascending: false)
+        default:
+            taskLists = taskLists.sorted(byKeyPath: "name", ascending: true)
+        }
+        tableView.reloadData()
     }
     
     @objc private func  addButtonPressed() {
@@ -99,6 +110,8 @@ class TaskListViewController: UITableViewController {
             self.tableView.reloadData()
         }
     }
+    
+
 }
 
 extension TaskListViewController {
